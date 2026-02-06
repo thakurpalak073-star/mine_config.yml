@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Modern Gradient Colors */
+    --primary-gradient: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #ffd93d 100%);
+    --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --dark-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    --glass-gradient: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    
+    /* Primary Colors */
+    --primary-color: #ff6b6b;
+    --primary-hover: #ff5252;
+    --primary-light: rgba(255, 107, 107, 0.1);
+    --accent-color: #ffd93d;
+    --accent-secondary: #667eea;
+    
+    /* UI Colors */
+    --secondary-color: #1a1a2e;
+    --text-color: #2d3436;
+    --text-muted: #636e72;
+    --text-light: #b2bec3;
+    --bg-color: #fafbfc;
+    --card-bg: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --white: #ffffff;
+    --success: #00b894;
+    --warning: #fdcb6e;
+    --danger: #ff6b6b;
+    
+    /* Dark Theme Colors */
+    --dark-bg: #0a0a0f;
+    --dark-card: rgba(255, 255, 255, 0.05);
+    --dark-text: #f5f6fa;
+    --dark-border: rgba(255, 255, 255, 0.1);
+
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 25px 80px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 40px rgba(255, 107, 107, 0.3);
+    --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.1);
+    
+    /* Transitions */
+    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s ease;
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+    --bg-color: var(--dark-bg);
+    --card-bg: var(--dark-card);
+    --text-color: var(--dark-text);
+    --border-color: var(--dark-border);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.7;
+    transition: var(--transition);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(255, 217, 61, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: var(--radius-full);
+}
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 28px;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: var(--transition);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: var(--white);
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5);
+    transform: translateY(-3px) scale(1.02);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Selection */
+::selection {
+    background: var(--primary-color);
+    color: var(--white);
+}

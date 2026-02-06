@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Restaurants - Foodie Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2>Manage Restaurants</h2>
+                <button class="btn btn-primary" onclick="openModal()">Add Restaurant</button>
+            </header>
+
+            <div class="admin-content">
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Rating</th>
+                                <th>Delivery Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="restaurants-tbody">
+                            <!-- Items -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="admin-modal" id="restaurant-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Add Restaurant</h3>
+            <form id="restaurant-form" style="margin-top: 20px;">
+                <input type="hidden" id="res-id">
+                <div class="form-group">
+                    <label>Restaurant Name</label>
+                    <input type="text" id="res-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="res-image" required>
+                </div>
+                <div class="form-group">
+                    <label>Rating</label>
+                    <input type="number" id="res-rating" step="0.1" max="5" required>
+                </div>
+                <div class="form-group">
+                    <label>Delivery Time (e.g. 30-40 min)</label>
+                    <input type="text" id="res-time" required>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save</button>
+                    <button type="button" class="btn" onclick="closeModal()" style="border: 1px solid var(--border-color);">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+            renderAdminSidebar('restaurants');
+            renderTable();
+        });
+
+        function renderTable() {
+            const data = Storage.getRestaurants();
+            const tbody = document.getElementById('restaurants-tbody');
+            tbody.innerHTML = data.map(res => `
+                <tr>
+                    <td><img src="${res.image}" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover;"></td>
+                    <td>${res.name}</td>
+                    <td><i class="fas fa-star" style="color: #f1c40f"></i> ${res.rating}</td>
+                    <td>${res.deliveryTime}</td>
+                    <td>
+                        <button class="btn" onclick="editRes(${res.id})"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(res = null) {
+            const modal = document.getElementById('restaurant-modal');
+            if (res) {
+                document.getElementById('res-id').value = res.id;
+                document.getElementById('res-name').value = res.name;
+                document.getElementById('res-image').value = res.image;
+                document.getElementById('res-rating').value = res.rating;
+                document.getElementById('res-time').value = res.deliveryTime;
+            } else {
+                document.getElementById('restaurant-form').reset();
+                document.getElementById('res-id').value = '';
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('restaurant-modal').style.display = 'none';
+        }
+
+        document.getElementById('restaurant-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('res-id').value;
+            const res = {
+                id: id ? parseInt(id) : null,
+                name: document.getElementById('res-name').value,
+                image: document.getElementById('res-image').value,
+                rating: parseFloat(document.getElementById('res-rating').value),
+                deliveryTime: document.getElementById('res-time').value
+            };
+            Storage.saveRestaurant(res);
+            closeModal();
+            renderTable();
+            showToast('Restaurant saved!');
+        });
+
+        function editRes(id) {
+            const res = Storage.getRestaurants().find(r => r.id === id);
+            openModal(res);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Foodie</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="../index.html" class="logo">Foodie</a>
+            <div class="nav-actions" style="margin-left: auto;">
+                <button onclick="toggleTheme()" class="btn" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <a href="menu.html" class="btn" aria-label="Menu">
+                    <i class="fas fa-utensils"></i>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Page Header -->
+        <div style="text-align: center; padding: 50px 0 30px;">
+            <h1 style="font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 12px;">
+                Your <span style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Cart</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Review your items before checkout</p>
+        </div>
+        
+        <div class="cart-layout" id="cart-content">
+            <!-- Cart Items and Summary will be rendered here -->
+        </div>
+
+        <div id="empty-cart" style="display: none; text-align: center; padding: 100px 0;">
+            <div style="font-size: 100px; margin-bottom: 24px;">🛒</div>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 12px;">Your cart is empty</h3>
+            <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto 24px;">Looks like you haven't added anything to your cart yet. Explore our delicious menu!</p>
+            <a href="menu.html" class="btn btn-primary" style="display: inline-flex;">
+                <i class="fas fa-utensils"></i>
+                Browse Menu
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2026 Foodie. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/data.js"></script>
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCart();
+            
+            // Header scroll effect
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        });
+        
+        window.addEventListener('cartUpdated', renderCart);
+
+        function renderCart() {
+            const cart = Storage.getCart();
+            const content = document.getElementById('cart-content');
+            const empty = document.getElementById('empty-cart');
+
+            if (cart.length === 0) {
+                content.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            content.style.display = 'grid';
+            empty.style.display = 'none';
+
+            let subtotal = 0;
+            const itemsHtml = cart.map((item, index) => {
+                subtotal += item.price * item.quantity;
+                return `
+                    <div class="cart-item" style="animation: fadeInUp 0.5s ease forwards; animation-delay: ${index * 0.1}s; opacity: 0;">
+                        <img src="${item.image}" class="cart-item-img" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <h4 style="font-weight: 600; margin-bottom: 4px;">${item.name}</h4>
+                            <p style="color: var(--text-muted); font-size: 14px;">${item.category || 'Delicious food'}</p>
+                            <span class="price" style="font-size: 1.2rem;">₹${item.price}</span>
+                        </div>
+                        <div class="cart-item-controls">
+                            <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-color); padding: 8px 12px; border-radius: var(--radius-full);">
+                                <button class="quantity-btn" onclick="updateQty(${item.id}, -1)">
+                                    <i class="fas fa-minus" style="font-size: 10px;"></i>
+                                </button>
+                                <span style="font-weight: 700; min-width: 24px; text-align: center;">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQty(${item.id}, 1)">
+                                    <i class="fas fa-plus" style="font-size: 10px;"></i>
+                                </button>
+                            </div>
+                            <span style="font-weight: 700; min-width: 80px; text-align: right;">₹${item.price * item.quantity}</span>
+                            <button class="btn" style="color: var(--danger); width: 40px; height: 40px; padding: 0;" onclick="removeItem(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const tax = Math.round(subtotal * 0.05);
+            const delivery = subtotal > 500 ? 0 : 40;
+            const total = subtotal + tax + delivery;
+
+            content.innerHTML = `
+                <div class="cart-items">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                        <h3 style="font-size: 1.2rem; font-weight: 700;">${cart.length} item${cart.length > 1 ? 's' : ''} in cart</h3>
+                        <button class="btn" style="color: var(--danger); font-size: 14px;" onclick="clearCart()">
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                    </div>
+                    ${itemsHtml}
+                </div>
+                <div class="cart-summary">
+                    <h3 style="font-family: 'Playfair Display', serif;">Order Summary</h3>
+                    
+                    <div style="background: var(--primary-light); padding: 12px 16px; border-radius: var(--radius); margin-bottom: 20px;">
+                        <p style="font-size: 13px; color: var(--primary-color); font-weight: 500;">
+                            <i class="fas fa-tag"></i> 
+                            ${delivery === 0 ? 'Free delivery applied!' : `Add ₹${500 - subtotal} more for free delivery`}
+                        </p>
+                    </div>
+
+                    <div class="summary-row" style="margin-top: 16px;">
+                        <span>Subtotal</span>
+                        <span>₹${subtotal}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (5%)</span>
+                        <span>₹${tax}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Fee</span>
+                        <span style="${delivery === 0 ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">
+                            ${delivery === 0 ? '₹40' : `₹${delivery}`}
+                        </span>
+                    </div>
+                    ${delivery === 0 ? `
+                    <div class="summary-row" style="color: var(--success);">
+                        <span>Delivery Discount</span>
+                        <span>-₹40</span>
+                    </div>
+                    ` : ''}
+                    <div class="summary-row summary-total">
+                        <span>Total</span>
+                        <span>₹${total}</span>
+                    </div>
+                    
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 24px; padding: 16px;" onclick="window.location.href='checkout.html'">
+                        <i class="fas fa-lock"></i>
+                        Proceed to Checkout
+                    </button>
+                    
+                    <a href="menu.html" style="display: block; text-align: center; margin-top: 16px; color: var(--primary-color); font-weight: 500; font-size: 14px;">
+                        <i class="fas fa-plus"></i> Add More Items
+                    </a>
+                </div>
+            `;
+        }
+
+        function updateQty(id, delta) {
+            Storage.updateQuantity(id, delta);
+        }
+
+        function removeItem(id) {
+            Storage.removeFromCart(id);
+            showToast('Item removed from cart', 'danger');
+        }
+
+        function clearCart() {
+            if (confirm('Are you sure you want to clear your cart?')) {
+                Storage.clearCart();
+                showToast('Cart cleared', 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

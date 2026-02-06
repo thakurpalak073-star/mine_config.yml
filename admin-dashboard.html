@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Foodie</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2>Dashboard Overview</h2>
+                <div class="user-info">
+                    <span>Admin User</span>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <p>Total Orders</p>
+                            <h3 id="total-orders">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <p>Revenue</p>
+                            <h3 id="total-revenue">₹0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <p>Total Users</p>
+                            <h3 id="total-users">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <p>Food Items</p>
+                            <h3 id="total-foods">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <h3>Recent Orders</h3>
+                    <table style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders-tbody">
+                            <!-- Orders -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+            renderAdminSidebar('dashboard');
+            loadStats();
+        });
+
+        function loadStats() {
+            const orders = Storage.getOrders();
+            const foods = Storage.getFoodItems();
+            const users = Storage.getUsers();
+
+            document.getElementById('total-orders').textContent = orders.length;
+            document.getElementById('total-foods').textContent = foods.length;
+            document.getElementById('total-users').textContent = users.length;
+            
+            const revenue = orders.reduce((acc, o) => acc + o.total, 0);
+            document.getElementById('total-revenue').textContent = `₹${revenue}`;
+
+            const tbody = document.getElementById('recent-orders-tbody');
+            const recentOrders = orders.slice(-5).reverse();
+
+            if (recentOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No orders yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recentOrders.map(order => `
+                <tr>
+                    <td>${order.id}</td>
+                    <td>${order.customer.name}</td>
+                    <td>₹${order.total}</td>
+                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                    <td>${new Date(order.date).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

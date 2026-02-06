@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Food - Foodie Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2>Manage Food Items</h2>
+                <button class="btn btn-primary" onclick="openModal()">Add New Item</button>
+            </header>
+
+            <div class="admin-content">
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="food-items-tbody">
+                            <!-- Items -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="admin-modal" id="food-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Add Food Item</h3>
+            <form id="food-form" style="margin-top: 20px;">
+                <input type="hidden" id="food-id">
+                <div class="form-group">
+                    <label>Food Name</label>
+                    <input type="text" id="food-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="food-category" required>
+                        <option value="Pizza">Pizza</option>
+                        <option value="Burger">Burger</option>
+                        <option value="Biryani">Biryani</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="food-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="food-desc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="food-image" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="food-type">
+                        <option value="true">Veg</option>
+                        <option value="false">Non-Veg</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Item</button>
+                    <button type="button" class="btn" onclick="closeModal()" style="border: 1px solid var(--border-color);">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+            renderAdminSidebar('food');
+            renderFoodTable();
+        });
+
+        function renderFoodTable() {
+            const items = Storage.getFoodItems();
+            const tbody = document.getElementById('food-items-tbody');
+            
+            tbody.innerHTML = items.map(item => `
+                <tr>
+                    <td><img src="${item.image}" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover;"></td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>₹${item.price}</td>
+                    <td><span class="${item.isVeg ? 'veg-label' : 'non-veg-label'}">${item.isVeg ? 'Veg' : 'Non-Veg'}</span></td>
+                    <td>
+                        <button class="btn" onclick="editItem(${item.id})" style="color: var(--primary-color)"><i class="fas fa-edit"></i></button>
+                        <button class="btn" onclick="deleteItem(${item.id})" style="color: var(--danger)"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(item = null) {
+            const modal = document.getElementById('food-modal');
+            const title = document.getElementById('modal-title');
+            const form = document.getElementById('food-form');
+
+            if (item) {
+                title.textContent = 'Edit Food Item';
+                document.getElementById('food-id').value = item.id;
+                document.getElementById('food-name').value = item.name;
+                document.getElementById('food-category').value = item.category;
+                document.getElementById('food-price').value = item.price;
+                document.getElementById('food-desc').value = item.description || '';
+                document.getElementById('food-image').value = item.image;
+                document.getElementById('food-type').value = item.isVeg.toString();
+            } else {
+                title.textContent = 'Add Food Item';
+                form.reset();
+                document.getElementById('food-id').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('food-modal').style.display = 'none';
+        }
+
+        document.getElementById('food-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('food-id').value;
+            const item = {
+                id: id ? parseInt(id) : null,
+                name: document.getElementById('food-name').value,
+                category: document.getElementById('food-category').value,
+                price: parseInt(document.getElementById('food-price').value),
+                description: document.getElementById('food-desc').value,
+                image: document.getElementById('food-image').value,
+                isVeg: document.getElementById('food-type').value === 'true'
+            };
+
+            Storage.saveFoodItem(item);
+            closeModal();
+            renderFoodTable();
+            showToast(id ? 'Item updated!' : 'Item added!');
+        });
+
+        function editItem(id) {
+            const item = Storage.getFoodItems().find(i => i.id === id);
+            openModal(item);
+        }
+
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                Storage.deleteFoodItem(id);
+                renderFoodTable();
+                showToast('Item deleted', 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

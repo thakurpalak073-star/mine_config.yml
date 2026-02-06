@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - Foodie Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2>Manage Users</h2>
+            </header>
+
+            <div class="admin-content">
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <!-- Items -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+            renderAdminSidebar('users');
+            renderTable();
+        });
+
+        function renderTable() {
+            const data = Storage.getUsers();
+            const tbody = document.getElementById('users-tbody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">No users registered yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(user => `
+                <tr>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td><span class="status-badge" style="background: ${user.status === 'Active' ? '#55efc4' : '#fab1a0'}">${user.status}</span></td>
+                    <td>
+                        <button class="btn" onclick="toggleStatus(${user.id})" style="color: ${user.status === 'Active' ? 'var(--danger)' : 'var(--success)'}">
+                            ${user.status === 'Active' ? 'Block' : 'Unblock'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleStatus(id) {
+            const users = Storage.getUsers();
+            const user = users.find(u => u.id === id);
+            if (user) {
+                user.status = user.status === 'Active' ? 'Blocked' : 'Active';
+                localStorage.setItem('users', JSON.stringify(users));
+                renderTable();
+                showToast(`User ${user.status}`);
+            }
+        }
+    </script>
+</body>
+</html>
